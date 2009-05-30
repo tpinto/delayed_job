@@ -13,6 +13,7 @@ module Delayed
       @quiet = options[:quiet]
       Delayed::Job.min_priority = options[:min_priority] if options.has_key?(:min_priority)
       Delayed::Job.max_priority = options[:max_priority] if options.has_key?(:max_priority)
+      Delayed::Job.server_id = options[:server_id] if options.has_key?(:server_id)
     end
 
     def start
