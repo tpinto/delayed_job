@@ -158,6 +158,19 @@ module Delayed
 
       nil # we didn't do any work, all 5 were not lockable
     end
+    
+    # Run a specific job.
+    # If no jobs are left we return nil
+    def self.work_on(id, max_run_time = MAX_RUN_TIME)
+
+      # We get up to 5 jobs from the db. In case we cannot get exclusive access to a job we try the next.
+      # this leads to a more even distribution of jobs across the worker processes
+      job = find(id)
+      t = job.run_with_lock(max_run_time, worker_name)
+      return t unless t == nil  # return if we did work (good or bad)
+
+      nil # we didn't do any work, all 5 were not lockable
+    end
 
     # Lock this job for this worker.
     # Returns true if we have the lock, false otherwise.
