@@ -27,9 +27,10 @@ module Delayed
 
     ParseObjectFromYaml = /\!ruby\/\w+\:([^\s]+)/
 
-    cattr_accessor :min_priority, :max_priority
+    cattr_accessor :min_priority, :max_priority, :server_id
     self.min_priority = nil
     self.max_priority = nil
+    self.server_id = nil
 
     # When a worker is exiting, make sure we don't have any locked jobs.
     def self.clear_locks!
@@ -112,8 +113,9 @@ module Delayed
     
       priority = args.first || 0
       run_at   = args[1]
-
-      Job.create(:payload_object => object, :priority => priority.to_i, :run_at => run_at)
+      server = args[2]
+      server &&= server.to_i
+      Job.create(:payload_object => object, :priority => priority.to_i, :run_at => run_at, :server => server)
     end
 
     # Find a few candidate jobs to run (in case some immediately get locked by others).
@@ -134,6 +136,11 @@ module Delayed
       if self.max_priority
         sql << ' AND (priority <= ?)'
         conditions << max_priority
+      end
+
+      if self.server_id
+        sql << ' AND (server is null OR server = ?)'
+        conditions << server_id
       end
 
       conditions.unshift(sql)
