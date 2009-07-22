@@ -27,12 +27,12 @@ namespace :jobs do
   
   desc "Start a specific delayed_job."
   task :run => [:merb_env, :environment] do
-    Delayed::Job.work_on(ENV['id'])
+    Delayed::Job.work_on(ENV['ID'], ENV['SERVER_ID'] || 0)
   end
   
   desc "Unlock a specific delayed_job."
   task :unlock => [:merb_env, :environment] do
-    d = Delayed::Job.find(ENV['id'])
+    d = Delayed::Job.find(ENV['ID'])
     d.unlock
     d.save!
   end
