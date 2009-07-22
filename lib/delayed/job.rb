@@ -110,11 +110,10 @@ module Delayed
       unless object.respond_to?(:perform) || block_given?
         raise ArgumentError, 'Cannot enqueue items which do not respond to perform'
       end
-
+    
       priority = args.first || 0
       run_at   = args[1]
       server = args[2]
-      server &&= server.to_i
       Job.create(:payload_object => object, :priority => priority.to_i, :run_at => run_at, :server => server)
     end
 
@@ -165,22 +164,22 @@ module Delayed
 
       nil # we didn't do any work, all 5 were not lockable
     end
-
+    
     # Run a specific job.
     # If no jobs are left we return nil
     def self.work_on(id, server_id, max_run_time = MAX_RUN_TIME)
       # We get up to 5 jobs from the db. In case we cannot get exclusive access to a job we try the next.
       # this leads to a more even distribution of jobs across the worker processes
       job = find(id)
-      if job
-        if job.server == nil || job.server == server_id.to_i # the job may be run by this or any server.
-          t = job.run_with_lock(max_run_time, worker_name)
-        else
-          puts "Job #{id} is not for server #{server_id}."
-          return nil
-        end
-      end
-
+			if job
+				if job.server == nil || job.server == server_id # the job may be run by this or any server.
+					t = job.run_with_lock(max_run_time, worker_name)
+				else
+   	  		puts "Job #{id} is not for server #{server_id}."
+					return nil
+				end
+			end
+      
       return t unless t == nil  # return if we did work (good or bad)
 
       nil # we didn't do any work, all 5 were not lockable
@@ -227,9 +226,9 @@ module Delayed
       num.times do
         case self.reserve_and_run_one_job
         when true
-          success += 1
+            success += 1
         when false
-          failure += 1
+            failure += 1
         else
           break  # leave if no work could be done
         end
@@ -244,7 +243,7 @@ module Delayed
       payload_object.perform
     end
 
-    private
+  private
 
     def deserialize(source)
       handler = YAML.load(source) rescue nil
@@ -260,16 +259,16 @@ module Delayed
       return handler if handler.respond_to?(:perform)
 
       raise DeserializationError,
-      'Job failed to load: Unknown handler. Try to manually require the appropiate file.'
+        'Job failed to load: Unknown handler. Try to manually require the appropiate file.'
     rescue TypeError, LoadError, NameError => e
       raise DeserializationError,
-      "Job failed to load: #{e.message}. Try to manually require the required file."
+        "Job failed to load: #{e.message}. Try to manually require the required file."
     end
 
     # Constantize the object so that ActiveSupport can attempt
     # its auto loading magic. Will raise LoadError if not successful.
     def attempt_to_load(klass)
-      klass.constantize
+       klass.constantize
     end
 
     # Get the current time (GMT or local depending on DB)
@@ -279,7 +278,7 @@ module Delayed
       (ActiveRecord::Base.default_timezone == :utc) ? Time.now.utc : Time.now
     end
 
-    protected
+  protected
 
     def before_save
       self.run_at ||= self.class.db_time_now
