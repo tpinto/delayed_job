@@ -1,0 +1,2 @@
+* rake task 'jobs:reset ID=id' so one can reset attempts, errors and run_at. also, unlock it. just like it was a brand new job
+* new columns on the database: 'class' so we can know the class of the job without scanning the 'handler' field
