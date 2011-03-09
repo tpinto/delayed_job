@@ -18,7 +18,7 @@ module Delayed
     
           priority = args.first || Delayed::Worker.default_priority
           run_at   = args[1]
-          server = args[2] || TOOLS_SERVER_ID || nil
+          server = args[2] || TOOLS_SERVER_ID
           
           self.create(:payload_object => object, :priority => priority.to_i, :run_at => run_at, :server => server)
         end
